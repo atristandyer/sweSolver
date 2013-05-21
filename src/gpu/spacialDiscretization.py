@@ -19,6 +19,7 @@ try:
 
     # Create reference to the specific functions in the SourceModule
     ReconstructFreeSurfaceFn = spacialModule.get_function("ReconstructFreeSurface")
+    CalculatePropSpeedsFn = spacialModule.get_function("CalculatePropSpeeds")
 
     # Create callable functions
     def ReconstructFreeSurface(UGPU, BottomIntPtsGPU, UIntPtsGPU, huvIntPtsGPU, m, n, dx, dy, blockDims, gridDims):
@@ -26,6 +27,12 @@ try:
         ReconstructFreeSurfaceFn(UGPU, BottomIntPtsGPU, UIntPtsGPU, huvIntPtsGPU,
                                  np.int32(m), np.int32(n), np.float32(dx), np.float32(dy),
                                  block=(blockDims[0], blockDims[1], 1), grid=(gridDims[0], gridDims[1]))
+
+    def CalculatePropSpeeds(UIntPtsGPU, huvIntPtsGPU, propSpeedsGPU, m, n, blockDims, gridDims):
+
+        CalculatePropSpeedsFn(UIntPtsGPU, huvIntPtsGPU, propSpeedsGPU,
+                              np.int32(m), np.int32(n),
+                              block=(blockDims[0], blockDims[1], 1), grid=(gridDims[0], gridDims[1]))
 
 except IOError:
     print "Error opening spacialDiscretization.cu"
