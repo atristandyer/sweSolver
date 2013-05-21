@@ -58,35 +58,64 @@ __global__ void FluxSolver(float *Fluxes, float *UIntPts, float *BottomIntPts, f
 
 		//// East flux calculations
 		// Get the propagation speeds to the left and right of the right side interface
-		float aLeft = propSpeeds[(row+1)*n*4 + col*4 + 3];
+		float aLeft = propSpeeds[row*n*4 + (col+1)*4 + 3];
 		float aRight = propSpeeds[row*n*4 + col*4 + 2];
 		
 		// At least one propagation speed needs to be nonzero for flux calculation
 		if (aLeft != 0.0f || aRight != 0.0f)
 		{
 			// Get the U vectors to the left and right of the right side interface
-			float Uleft[3] = {UIntPts[westIndex], UIntPts[westIndex + 1], UIntPts[westIndex + 2]};
-			float Uright[3] = {UIntPts[eastIndex], UIntPts[eastIndex + 1], UIntPts[eastIndex + 2]};
+			float Uleft[3] = {UIntPts[eastIndex], UIntPts[eastIndex + 1], UIntPts[eastIndex + 2]}; // U just to the left of the interface (ie. East value of current cell)
+			float Uright[3] = {UIntPts[westIndex], UIntPts[westIndex + 1], UIntPts[westIndex + 2]};// U just to the right of the interface (ie. West value of cell to the right)
 			
 			// Create the F vectors and calculate them
 			float Fright[3], Fleft[3];
-			F(Fright, Uright, eastBottomElevation);
-			F(Fleft, Uleft, eastBottomElevation);
+			F(Fright, Uright, eastBottomElevation); // Calculate F based on values of U just to the right of the cell interface
+			F(Fleft, Uleft, eastBottomElevation);   // Calculate F based on values of U just to the left of the cell interface
 			
-			// Calculate the fluxes
+			// Calculate the flux across the right side interface
 			for (int i=0; i<3; i++)
 			{
-				Fluxes[fluxCellIndex + 1*3 + i] = ((aRight*Fright[i] - aLeft*Fleft[i]) / (aRight - aLeft)) + ((aRight*aLeft)/(aRight-aLeft))*(Uleft[i] - Uright[i]);
+				Fluxes[fluxCellIndex + 1*3 + i] = ((aRight*Fleft[i] - aLeft*Fright[i]) / (aRight - aLeft)) + ((aRight*aLeft)/(aRight-aLeft))*(Uright[i] - Uleft[i]);
 			}
 		} else {
 			for (int i=0; i<3; i++)
 			{
+				// If neither this cell nor the cell to the right has a propagation speed (ie. is dry), there is no flux
 				Fluxes[fluxCellIndex + 1*3 + i] = 0.0f;
 			}
 		}
 		
 		
 		//// North flux calculations
+		// Get the propagation speeds above and below the upper interface
+		float bUp = propSpeeds[(row+1)*n*4 + col*4 + 1];
+		float bDown = propSpeeds[row*n*4 + col*4 + 0];
+		
+		// At least one propagation speed needs to be nonzero for flux calculation
+		if (bUp != 0.0f || bDown != 0.0f)
+		{
+			// Get the U vectors above and below the upper interface
+			float Uup[3] = {UIntPts[southIndex], UIntPts[southIndex + 1], UIntPts[southIndex + 2]};  // U just above the interface (ie. South value of the current cell)
+			float Udown[3] = {UIntPts[northIndex], UIntPts[northIndex + 1], UIntPts[northIndex + 2]};// U just below the interface (ie. North value of the current cell)
+			
+			// Create the G vectors and calculate them
+			float Gup[3], Gdown[3];
+			G(Gup, Uup, northBottomElevation);     // Calculate G based on the values just above the interface
+			G(Gdown, Udown, northBottomElevation); // Calculate G based on the values just below the interface
+			
+			// Calculate the flux across the upper interface
+			for (int i=0; i<3; i++)
+			{
+				Fluxes[fluxCellIndex + i] = ((bUp*Gdown[i] - bDown*Gup[i]) / (bUp - bDown)) + ((bUp*bDown)/(bUp-bDown))*(Uup[i] - Udown[i]);
+			}
+		} else {
+			for (int i=0; i<3; i++)
+			{
+				// If neither this cell nor the cell above has a propagation speed (ie. is dry), there is no flux
+				Fluxes[fluxCellIndex + i] = 0.0f;
+			}
+		}
 	}
 }
 
