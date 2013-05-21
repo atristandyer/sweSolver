@@ -1,4 +1,4 @@
-___device___ float minmod(float a, float b, float c)
+__device__ float minmod(float a, float b, float c)
 {
 	float ab = fminf(fabsf(a), fabs(b)) * (copysignf(1.0f, a) + copysignf(1.0f, b)) * 0.5f;
 	return fminf(fabsf(ab, fabsf(c)) * (copysignf(1.0f, ab) + copysignf(1.0f, c)) * 0.5f;
@@ -27,22 +27,22 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 	// values from the previous timestep when the cell was wet, causing errors.
 	// 	huvIntPts: set h = u = v = 0
 	//	UIntPts: set w = ground elevation, u = v = 0
-	int cellIntPtIndex = row*n*4*2 + col*4*2;
+	int cellIntPtIndex = row*n*4*3 + col*4*3;
 	for (int i=0; i<4; i++)
 	{
-		for (int j=0; i<2; j++)
+		for (int j=0; i<3; j++)
 		{
-			huvIntPts[cellIntPtIndex + i*2 + j] = 0.0f;
+			huvIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
 			if (j > 0)
 			{
-				UIntPts[cellIntPtIndex + i*2 + j] = 0.0f;
+				UIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
 			}
 		}
 	}
-	UIntPts[cellIntPtIndex + 0*2] = BottomIntPts[upTerrainIndex];
-	UIntPts[cellIntPtIndex + 1*2] = BottomIntPts[downTerrainIndex];
-	UIntPts[cellIntPtIndex + 2*2] = BottomIntPts[rightTerrainIndex];
-	UIntPts[cellIntPtIndex + 3*2] = BottomIntPts[leftTerrainIndex];
+	UIntPts[cellIntPtIndex + 0*3] = BottomIntPts[upTerrainIndex];
+	UIntPts[cellIntPtIndex + 1*3] = BottomIntPts[downTerrainIndex];
+	UIntPts[cellIntPtIndex + 2*3] = BottomIntPts[rightTerrainIndex];
+	UIntPts[cellIntPtIndex + 3*3] = BottomIntPts[leftTerrainIndex];
 
 	// First check if the thread is operating on a cell inside of the block's one cell deep ghost cells
 	if (col > 0 && row > 0 && col < n-1 && row < m-1)
@@ -54,10 +54,14 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 		int hvIndex = row*n*3 + col*3 + 2;
 	
 		// Now check if the cell has water (evaluates to true if it does)
+		// TODO: It may be necessary to have an else statement as well. If a cell goes
+		//	 from wet to dry, the value of w may drop below the ground level, so
+		//	 if the cell needs to get wet again, the water level will have to increase
+		//	 from that value, not from ground level
 		if (U[wIndex] > (BottomIntPts[leftTerrainIndex] + BottomIntPts[rightTerrainIndex])/2.0f) 
 		{
-			float N[2], S[2], E[2], W[2]; // These are the [w, hu] and [w, hv] vectors
-			float north[2], south[2], east[2], west[2]; // These are the [h, u] and [h, v] vectors
+			float N[3], S[3], E[3], W[3]; // These are the [w, hu, hv] vectors
+			float north[3], south[3], east[3], west[3]; // These are the [h, u, v] vectors
 			
 			float forward, central, backward, slope;
 			float Kappa = 0.01f * fmaxf(1.0f, fminf(dx, dy));
@@ -71,23 +75,16 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 			int rightIndex = row*n*3 + (col+1)*3;
 			
 			// Reconstruct the free surface so that it is sloped based on the free surface height of adjacent cells
-			for (int i=0; i<2; i++)
+			for (int i=0; i<3; i++)
 			{
-				// This value is used to make N/S values used [w, hv] instead of [w, hu]
-				int extraIndex = 0;
-				if (i == 1)
-				{
-					extraIndex += 1;
-				}
-				
 				// North and South
-				forward = (U[upIndex+i+extraIndex] - U[wIndex+i+extraIndex])/dy;
-				central = (U[upIndex+i+extraIndex] - U[downIndex+i+extraIndex])/(2.0f*dy);
-				backward = (U[wIndex+i+extraIndex] - U[downIndex+i+extraIndex])/dy;
+				forward = (U[upIndex+i] - U[wIndex+i])/dy;
+				central = (U[upIndex+i] - U[downIndex+i])/(2.0f*dy);
+				backward = (U[wIndex+i] - U[downIndex+i])/dy;
 				slope = minmod(1.3f*forward, central, 1.3f*backward);
 				
-				N[i] = U[wIndex+i+extraIndex] + (dy/2.0f)*slope;
-				S[i] = U[wIndex+i+extraIndex] - (dy/2.0f)*slope;
+				N[i] = U[wIndex+i] + (dy/2.0f)*slope;
+				S[i] = U[wIndex+i] - (dy/2.0f)*slope;
 				
 				// East and West
 				forward = (U[rightIndex+i] - U[wIndex+i])/dx;
@@ -127,19 +124,25 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 			east[0] = E[0] - BottomIntPts[rightTerrainIndex];
 			west[0] = W[0] - BottomIntPts[leftTerrainIndex];
 			
-			north[1] = (sqrt2 * north[0] * N[1]) / sqrtf(powf(north[0], 4.0f) + fmaxf(powf(north[0], 4.0f), Kappa));
-			south[1] = (sqrt2 * south[0] * S[1]) / sqrtf(powf(south[0], 4.0f) + fmaxf(powf(south[0], 4.0f), Kappa));
-			east[1] = (sqrt2 * east[0] * E[1]) / sqrtf(powf(east[0], 4.0f) + fmaxf(powf(east[0], 4.0f), Kappa));
-			west[1] = (sqrt2 * west[0] * W[1]) / sqrtf(powf(west[0], 4.0f) + fmaxf(powf(west[0], 4.0f), Kappa));
+			for (int i=1; i<3; i++)
+			{
+				north[i] = (sqrt2 * north[0] * N[i]) / sqrtf(powf(north[0], 4.0f) + fmaxf(powf(north[0], 4.0f), Kappa));
+				south[i] = (sqrt2 * south[0] * S[i]) / sqrtf(powf(south[0], 4.0f) + fmaxf(powf(south[0], 4.0f), Kappa));
+				east[i] = (sqrt2 * east[0] * E[i]) / sqrtf(powf(east[0], 4.0f) + fmaxf(powf(east[0], 4.0f), Kappa));
+				west[i] = (sqrt2 * west[0] * W[i]) / sqrtf(powf(west[0], 4.0f) + fmaxf(powf(west[0], 4.0f), Kappa));
+			}
 			
 			// Update the values of hu and hv based on new values of u and v
-			N[1] = north[0] * north[1];
-			S[1] = south[0] * south[1];
-			E[1] = east[0] * east[1];
-			W[1] = west[0] * west[1];
+			for (int i=1; i<3; i++)
+			{
+				N[i] = north[0] * north[i];
+				S[i] = south[0] * south[i];
+				E[i] = east[0] * east[i];
+				W[i] = west[0] * west[i];
+			}
 			
 			// Put the calculated interface values into global memory
-			for (int i=0; i<2; i++)
+			for (int i=0; i<3; i++)
 			{
 				UIntPts[cellIntPtIndex + 0*2 + i] = N[i];
 				UIntPts[cellIntPtIndex + 1*2 + i] = S[i];
