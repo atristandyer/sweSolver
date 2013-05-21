@@ -19,7 +19,7 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 	int upTerrainIndex = (row+1)*(n+1)*2 + col*2;
 	int downTerrainIndex = row*(n+1)*2 + col*2;
 	int leftTerrainIndex = row*(n+1)*2 + col*2 + 1;
-	int rightTerrainIndex = row*(n+1)*2 + col*2 + 3;
+	int rightTerrainIndex = row*(n+1)*2 + (col+1)*2 + 1;
 	
 	// Before performing calculations for a timestep, we need to reset any residual values left over
 	// from previous calculations in case a cell goes from wet to dry. In the case of a cell going
@@ -27,22 +27,22 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 	// values from the previous timestep when the cell was wet, causing errors.
 	// 	huvIntPts: set h = u = v = 0
 	//	UIntPts: set w = ground elevation, u = v = 0
-	int cellIntPtIndex = row*n*4*3 + col*4*3;
+	int cellIntPtIndex = row*n*4*2 + col*4*2;
 	for (int i=0; i<4; i++)
 	{
-		for (int j=0; i<3; j++)
+		for (int j=0; i<2; j++)
 		{
-			huvIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
+			huvIntPts[cellIntPtIndex + i*2 + j] = 0.0f;
 			if (j > 0)
 			{
-				UIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
+				UIntPts[cellIntPtIndex + i*2 + j] = 0.0f;
 			}
 		}
 	}
-	UIntPts[cellIntPtIndex + 0*3] = BottomIntPts[upTerrainIndex];
-	UIntPts[cellIntPtIndex + 1*3] = BottomIntPts[downTerrainIndex];
-	UIntPts[cellIntPtIndex + 2*3] = BottomIntPts[rightTerrainIndex];
-	UIntPts[cellIntPtIndex + 3*3] = BottomIntPts[leftTerrainIndex];
+	UIntPts[cellIntPtIndex + 0*2] = BottomIntPts[upTerrainIndex];
+	UIntPts[cellIntPtIndex + 1*2] = BottomIntPts[downTerrainIndex];
+	UIntPts[cellIntPtIndex + 2*2] = BottomIntPts[rightTerrainIndex];
+	UIntPts[cellIntPtIndex + 3*2] = BottomIntPts[leftTerrainIndex];
 
 	// First check if the thread is operating on a cell inside of the block's one cell deep ghost cells
 	if (col > 0 && row > 0 && col < n-1 && row < m-1)
@@ -70,7 +70,7 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 			int leftIndex = row*n*3 + (col-1)*3;
 			int rightIndex = row*n*3 + (col+1)*3;
 			
-			// Reconstruct the free surface to be sloped based on the free surface height of adjacent cells
+			// Reconstruct the free surface so that it is sloped based on the free surface height of adjacent cells
 			for (int i=0; i<2; i++)
 			{
 				// This value is used to make N/S values used [w, hv] instead of [w, hu]
@@ -83,7 +83,7 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 				// North and South
 				forward = (U[upIndex+i+extraIndex] - U[wIndex+i+extraIndex])/dy;
 				central = (U[upIndex+i+extraIndex] - U[downIndex+i+extraIndex])/(2.0f*dy);
-				backward = (U[[wIndex+i+extraIndex] - U[downIndex+i+extraIndex])/dy;
+				backward = (U[wIndex+i+extraIndex] - U[downIndex+i+extraIndex])/dy;
 				slope = minmod(1.3f*forward, central, 1.3f*backward);
 				
 				N[i] = U[wIndex+i+extraIndex] + (dy/2.0f)*slope;
@@ -139,17 +139,17 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 			W[1] = west[0] * west[1];
 			
 			// Put the calculated interface values into global memory
-			for (int i=0; i<3; i++)
+			for (int i=0; i<2; i++)
 			{
-				UIntPts[cellIntPtIndex + 0*3 + i] = N[i];
-				UIntPts[cellIntPtIndex + 1*3 + i] = S[i];
-				UIntPts[cellIntPtIndex + 2*3 + i] = E[i];
-				UIntPts[cellIntPtIndex + 3*3 + i] = W[i];
+				UIntPts[cellIntPtIndex + 0*2 + i] = N[i];
+				UIntPts[cellIntPtIndex + 1*2 + i] = S[i];
+				UIntPts[cellIntPtIndex + 2*2 + i] = E[i];
+				UIntPts[cellIntPtIndex + 3*2 + i] = W[i];
 				
-				huvIntPts[cellIntPtIndex + 0*3 + i] = north[i];
-				huvIntPts[cellIntPtIndex + 1*3 + i] = south[i];
-				huvIntPts[cellIntPtIndex + 2*3 + i] = east[i];
-				huvIntPts[cellIntPtIndex + 3*3 + i] = west[i];
+				huvIntPts[cellIntPtIndex + 0*2 + i] = north[i];
+				huvIntPts[cellIntPtIndex + 1*2 + i] = south[i];
+				huvIntPts[cellIntPtIndex + 2*2 + i] = east[i];
+				huvIntPts[cellIntPtIndex + 3*2 + i] = west[i];
 			}
 			
 			// End the kernel here. The values of the conserved variable [h, u, v] need to be stored
@@ -159,15 +159,58 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 }
 
 
-__global__ void CalculatePropSpeeds(float *UIntPts, float *huvIntPts, float *propSpeeds, int m, int n,)
+__global__ void CalculatePropSpeeds(float *UIntPts, float *huvIntPts, float *propSpeeds, int m, int n)
 {
 	// Calculate the row and column of the thread within the thread block
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
 	int col = blockIdx.x * blockDim.x + threadIdx.x;
 	
+	// Constants
+	float g = 9.81f;
+	
+	// Get rid of any residual values in the propSpeeds matrix in case
+	// a cell has gone from wet to dry in the previous timestep
+	for (int i=0; i<4; i++)
+	{
+		propSpeeds[row*n*4 + col*4 + i] = 0.0f;
+	}
+	
 	// First check if the thread is operating on a cell inside of the block's one cell deep ghost cells
 	if (col > 0 && row > 0 && col < n-1 && row < m-1)
 	{
 		
+		// Make sure cell is wet by making sure at least one value of h is greater than 0
+		float hNorth = huvIntPts[row*n*4*2 + col*4*2 + 0*2];		// value of h at the north interface of the current cell
+		float hSouth = huvIntPts[(row+1)*n*4*2 + col*4*2 + 1*2];	// value of h at the south interface of the cell above
+		float hEast = huvIntPts[row*n*4*2 + col*4*2 + 2*2];		// value of h at the east interface of the current cell
+		float hWest = huvIntPts[row*n*4*2 + (col+1)*4*2 + 3*2];		// value of h at the west interface of the cell to the right
+		if (hNorth > 0.0f || hSouth > 0.0f || hEast > 0.0f || hWest > 0.0f)
+		{
+			// Get the rest of the values needed from huvIntPts
+			float vNorth = huvIntPts[row*n*4*2 + col*4*2 + 0*2 + 1];	// value of v at the north interface of the current cell
+			float vSouth = huvIntPts[(row+1)*n*4*2 + col*4*2 + 1*2 + 1];	// value of v at the south interface of the cell above
+			float uEast = huvIntPts[row*n*4*2 + col*4*2 + 2*2 + 1];		// value of u at the east interface of the current cell
+			float uWest = huvIntPts[row*n*4*2 + (col+1)*4*2 + 3*2 + 1];	// value of u at the west interface of the cell to the right
+		
+			// Each cell in propSpeeds contains four values [N, S, E, W]
+			// Each thread will calculate the N, E values of it's own cell, the S of the cell above, and the W of
+			// the cell to the right.
+			int N = row*n*4 + col*4 + 0;	// North value of this cell
+			int S = (row+1)*n*4 + col*4 + 1;// South value of cell above
+			int E = row*n*4 + col*4 + 2;	// East value of this cell
+			int W = row*n*4 + (col+1)*4 + 3;// West value of cell to the right
+		
+			// Calculate north propagation speed of the current cell
+			propSpeeds[N] = fminf(fminf(vNorth - sqrtf(g*hNorth), vSouth - sqrtf(g*hSouth)), 0.0f);
+		
+			// Calculate south propagation speed of the cell above
+			propSpeeds[S] = fmaxf(fmaxf(vNorth + sqrtf(g*hNorth), vSouth + sqrtf(g*hSouth)), 0.0f);
+		
+			// Calculate east propagation speed of the current cell
+			propSpeeds[E] = fminf(fminf(uEast - sqrtf(g*hEast), uWest - sqrtf(g*hWest)), 0.0f);
+		
+			// Calculate west propagation speed of the cell to the right
+			propSpeeds[W] = fmaxf(fmaxf(uEast + sqrtf(g*hEast), uWest + sqrtf(g*hWest)), 0.0f);
+		}
 	}
 }
