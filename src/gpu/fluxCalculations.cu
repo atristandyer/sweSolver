@@ -120,6 +120,40 @@ __global__ void FluxSolver(float *Fluxes, float *UIntPts, float *BottomIntPts, f
 }
 
 
+__global__ void buildRValues(float *RValues, float *Fluxes, float *SlopeSource, float *WindSource, int m, int n)
+{
+	// Calculate the row and column of the thread within the thread block
+	int row = blockIdx.y * blockDim.y + threadIdx.y;
+	int col = blockIdx.x * blockDim.x + threadIdx.x;
+	
+	// Calculate the cell's index in the RValues vector
+	int RCellIndex = row*n*3 + col*3;
+	
+	// Clear residual values from the R matrix in case a cell goes from wet to dry
+	for (int i=0; i<3; i++)
+	{
+		RValues[RCellIndex+i] = 0.0f;
+	}
+	
+	// First check if the thread is operating on a cell inside of the block's two cell deep ghost cells
+	if (col > 1 && row > 1 && col < n-2 && row < m-2)
+	{
+		// Calculate the indices of the flux arrays for the current cell (each cell stores it's own north and east values)
+		int north = row*n*2*3 + col*2*3;		// Index of the flux array at the north interface
+		int south = (row-1)*n*2*3 + col*2*3; 		// Index of the flux array at the south interface
+		int east = row*n*2*3 + col*2*3 + 1*3;		// Index of the flux array at the east interface
+		int west = row*n*2*3 + (col-1)*2*3 + 1*3;	// Index of the flux array at the west interface
+		
+		// Calculate the source index (slope and wind source matrices are the same size so we can use the same indices)
+		int source = row*n*2 + col*2;
+		
+		// Calculate values of R
+		RValues[RCellIndex] = 0.0f - (Fluxes[east] - Fluxes[west]) - (Fluxes[north] - Fluxes[south]);
+		RValues[RCellIndex+1] = WindSource[source] + SlopeSource[source] - (Fluxes[east+1] - Fluxes[west+1]) - (Fluxes[north+1] - Fluxes[south+1]);
+		RValues[RCellIndex+2] = WindSource[source+1] + SlopeSource[source+1] - (Fluxes[east+2] - Fluxes[west+2]) - (Fluxes[north+2] - Fluxes[south+2]);
+	}
+}
+
 
 
 

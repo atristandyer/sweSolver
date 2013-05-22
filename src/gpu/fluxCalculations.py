@@ -17,6 +17,7 @@ try:
 
     # Create reference to the specific functions in the SourceModule
     FluxSolverFn = fluxModule.get_function("FluxSolver")
+    BuildRFn = fluxModule.get_function("buildRValues")
 
     # Create callable functions
     def FluxSolver(FluxesGPU, UIntPtsGPU, BottomIntPtsGPU, propSpeedsGPU, m, n, blockDims, gridDims):
@@ -24,6 +25,12 @@ try:
         FluxSolverFn(FluxesGPU, UIntPtsGPU, BottomIntPtsGPU, propSpeedsGPU,
                      np.int32(m), np.int32(n),
                      block=(blockDims[0], blockDims[1], 1), grid=(gridDims[0], gridDims[1]))
+
+    def BuildRValues(RValuesGPU, FluxesGPU, SlopeSourceGPU, WindSourceGPU, m, n, blockDims, gridDims):
+
+        BuildRFn(RValuesGPU, FluxesGPU, SlopeSourceGPU, WindSourceGPU,
+                 np.int32(m), np.int32(n),
+                 block=(blockDims[0], blockDims[1], 1), grid=(gridDims[0], gridDims[1]))
 
 except IOError:
     print "Error opening fluxCalculations.cu"
