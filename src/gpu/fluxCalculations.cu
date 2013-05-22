@@ -129,11 +129,12 @@ __global__ void buildRValues(float *RValues, float *Fluxes, float *SlopeSource, 
 	// Calculate the cell's index in the RValues vector
 	int RCellIndex = row*n*3 + col*3;
 	
+	// Actually, we don't need this because all three R values will evaluate to zero for a dry cell
 	// Clear residual values from the R matrix in case a cell goes from wet to dry
-	for (int i=0; i<3; i++)
-	{
-		RValues[RCellIndex+i] = 0.0f;
-	}
+	//for (int i=0; i<3; i++)
+	//{
+	//	RValues[RCellIndex+i] = 0.0f;
+	//}
 	
 	// First check if the thread is operating on a cell inside of the block's two cell deep ghost cells
 	if (col > 1 && row > 1 && col < n-2 && row < m-2)
