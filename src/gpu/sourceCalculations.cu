@@ -32,3 +32,59 @@ __global__ void bedSlopeSourceSolver(float *BedSlopeSource, float *U, float *Bot
 		BedSlopeSource[slopeIndex+1] = -9.81f * slopeY * hCenter;		 
 	}
 }
+
+
+__global__ void bedShearSourceSolver(float *BedShearSource, float *U, float *BottomIntPts, int m, int n, float dx, float dy)
+{
+	// Define constants used in calculating shear friction
+	float manningsN = 0.03f;
+	float sqrt2 = sqrtf(2.0f);
+	float Kappa = 0.01f * fmaxf(1.0f, fminf(dx, dy));
+	
+	// Calculate the row and column of the thread within the thread block
+	int row = blockIdx.y * blockDim.y + threadIdx.y;
+	int col = blockIdx.x * blockDim.x + threadIdx.x;
+	
+	// First check if the thread is operating on a cell inside of the block's one cell deep ghost cells
+	if (col > 0 && row > 0 && col < n-1 && row < m-1)
+	{
+		int uIndex = row*n*3 + col*3;
+		
+		float h = U[uIndex] - (BottomIntPts[] + BottomIntPts[]) / 2.0f;
+		if (h > 0.0f)
+		{
+		
+		} else {
+		
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
