@@ -36,7 +36,7 @@ __global__ void bedSlopeSourceSolver(float *BedSlopeSource, float *U, float *Bot
 
 __global__ void bedShearSourceSolver(float *BedShearSource, float *U, float *BottomIntPts, int m, int n, float dx, float dy)
 {
-	// Define constants used in calculating shear friction
+	// Define constants used in calculating shear friction and velocity
 	float manningsN = 0.03f;
 	float sqrt2 = sqrtf(2.0f);
 	float Kappa = 0.01f * fmaxf(1.0f, fminf(dx, dy));
@@ -48,14 +48,30 @@ __global__ void bedShearSourceSolver(float *BedShearSource, float *U, float *Bot
 	// First check if the thread is operating on a cell inside of the block's one cell deep ghost cells
 	if (col > 0 && row > 0 && col < n-1 && row < m-1)
 	{
+		// Calculate index of cell in U
 		int uIndex = row*n*3 + col*3;
 		
-		float h = U[uIndex] - (BottomIntPts[] + BottomIntPts[]) / 2.0f;
+		// Calculate indices of right and left interface elevations
+		int leftBottomIndex = row*(n+1)*2 + col*2 + 1;
+		int rightBottomIndex = leftBottomIndex + 2;
+		
+		// Water column height is w-B
+		float h = U[uIndex] - (BottomIntPts[leftBottomIndex] + BottomIntPts[rightBottomIndex]) / 2.0f;
 		if (h > 0.0f)
 		{
-		
+			// Calculate Chezy Friction Coefficient from Manning's N
+			float Cz = powf(h, 1.0f/6.0f)/manningsN;
+			
+			// Calculatate u and v using the damping method for shoal zones (see Brodtkorb eq. 5)
+			float denom = sqrtf(powf(h, 4.0f) + fmaxf(powf(h, 4.0f), Kappa));
+			float u = (sqrt2 * h * U[uIndex+1]) / denom;
+			float v = (sqrt2 * h * U[uIndex+2]) / denom;
+			
+			// Calculate bed shear
+			BedShearSource[row*n + col] = (-9.81f * sqrtf(powf(u, 2.0f) + powf(v, 2.0f))) / (h * powf(Cz, 2.0f));
 		} else {
-		
+			// There is no water, so there is no bed shear
+			BedShearSource[row*n + col] = 0.0f;
 		}
 	}
 }
