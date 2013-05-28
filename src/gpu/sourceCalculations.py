@@ -20,15 +20,15 @@ try:
     BedShearFn = sourceModule.get_function("bedShearSourceSolver")
 
     # Create callable functions
-    def BedSlopeSourceSolver(BedSlopeSourceGPU, UGPU, BottomIntPtsGPU, m, n, dx, dy, blockDims, gridDims):
+    def BedSlopeSourceSolver(SlopeSourceGPU, UGPU, BottomIntPtsGPU, m, n, dx, dy, blockDims, gridDims):
 
-        BedSlopeFn(BedSlopeSourceGPU, UGPU, BottomIntPtsGPU,
+        BedSlopeFn(SlopeSourceGPU, UGPU, BottomIntPtsGPU,
                    np.int32(m), np.int32(n), np.float32(dx), np.float32(dy),
                    block=(blockDims[0], blockDims[1], 1), grid=(gridDims[0], gridDims[1]))
 
-    def BedShearSourceSolver(BedSlopeSourceGPU, UGPU, BottomIntPtsGPU, m, n, dx, dy, blockDims, gridDims):
+    def BedShearSourceSolver(ShearSourceGPU, UGPU, BottomIntPtsGPU, m, n, dx, dy, blockDims, gridDims):
 
-        BedShearFn(BedSlopeSourceGPU, UGPU, BottomIntPtsGPU,
+        BedShearFn(ShearSourceGPU, UGPU, BottomIntPtsGPU,
                    np.int32(m), np.int32(n), np.float32(dx), np.float32(dy),
                    block=(blockDims[0], blockDims[1], 1), grid=(gridDims[0], gridDims[1]))
 
