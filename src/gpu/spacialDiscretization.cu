@@ -28,21 +28,26 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 	// 	huvIntPts: set h = u = v = 0
 	//	UIntPts: set w = ground elevation, u = v = 0
 	int cellIntPtIndex = row*n*4*3 + col*4*3;
-	for (int i=0; i<4; i++)
-	{
-		for (int j=0; i<3; j++)
-		{
-			huvIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
-			if (j > 0)
-			{
-				UIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
-			}
-		}
-	}
-	UIntPts[cellIntPtIndex + 0*3] = BottomIntPts[upTerrainIndex];
-	UIntPts[cellIntPtIndex + 1*3] = BottomIntPts[downTerrainIndex];
-	UIntPts[cellIntPtIndex + 2*3] = BottomIntPts[rightTerrainIndex];
-	UIntPts[cellIntPtIndex + 3*3] = BottomIntPts[leftTerrainIndex];
+	
+//	if (row > 0 && col > 0 && row < m && col < n)
+//	{
+//		for (int i=0; i<4; i++)
+//		{
+//			for (int j=0; i<3; j++)
+//			{
+//				huvIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
+//				if (j > 0)
+//				{
+//					UIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
+//				}
+//			}
+//		}
+//	
+//		UIntPts[cellIntPtIndex + 0*2] = BottomIntPts[upTerrainIndex];
+//		UIntPts[cellIntPtIndex + 1*2] = BottomIntPts[downTerrainIndex];
+//		UIntPts[cellIntPtIndex + 2*2] = BottomIntPts[rightTerrainIndex];
+//		UIntPts[cellIntPtIndex + 3*2] = BottomIntPts[leftTerrainIndex];
+//	}
 
 	// First check if the thread is operating on a cell inside of the block's one cell deep ghost cells
 	if (col > 0 && row > 0 && col < n-1 && row < m-1)
@@ -141,15 +146,15 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 			// Put the calculated interface values into global memory
 			for (int i=0; i<3; i++)
 			{
-				UIntPts[cellIntPtIndex + 0*2 + i] = N[i];
-				UIntPts[cellIntPtIndex + 1*2 + i] = S[i];
-				UIntPts[cellIntPtIndex + 2*2 + i] = E[i];
-				UIntPts[cellIntPtIndex + 3*2 + i] = W[i];
+				UIntPts[cellIntPtIndex + 0*3 + i] = N[i];
+				UIntPts[cellIntPtIndex + 1*3 + i] = S[i];
+				UIntPts[cellIntPtIndex + 2*3 + i] = E[i];
+				UIntPts[cellIntPtIndex + 3*3 + i] = W[i];
 				
-				huvIntPts[cellIntPtIndex + 0*2 + i] = north[i];
-				huvIntPts[cellIntPtIndex + 1*2 + i] = south[i];
-				huvIntPts[cellIntPtIndex + 2*2 + i] = east[i];
-				huvIntPts[cellIntPtIndex + 3*2 + i] = west[i];
+				huvIntPts[cellIntPtIndex + 0*3 + i] = north[i];
+				huvIntPts[cellIntPtIndex + 1*3 + i] = south[i];
+				huvIntPts[cellIntPtIndex + 2*3 + i] = east[i];
+				huvIntPts[cellIntPtIndex + 3*3 + i] = west[i];
 			}
 			
 			// End the kernel here. The values of the conserved variable [h, u, v] need to be stored

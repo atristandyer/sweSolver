@@ -93,10 +93,13 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
     # Print the GPU's memory usage
     printGPUMemUsage()
 
+    # Wait...
+    timer.sleep(2)
+
     # Begin timestepping
+    print "Beginning timestepping"
     sTime = timer.time()
     while time < runTime:
-        print "Entered loop"
 #
 #         # Save output
 #
@@ -105,7 +108,7 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
 #         ###################################################
 #
         # Reconstruct the free surface
-#         ReconstructFreeSurface(UGPU, BottomIntPtsGPU, UIntPtsGPU, HUVIntPtsGPU, m, n, dx, dy, blockDims, gridDims)
+        ReconstructFreeSurface(UGPU, BottomIntPtsGPU, UIntPtsGPU, HUVIntPtsGPU, m, n, dx, dy, blockDims, gridDims)
 #
 #         # Calculate propagation speeds
 #         CalculatePropSpeeds(UIntPtsGPU, HUVIntPtsGPU, PropSpeedsGPU, m, n, blockDims, gridDims)
