@@ -41,3 +41,4 @@ U = buildPyramidWaterSurface(testM, testN, 3.0, 8, 8, 3.3, 0.1)
 U = validateInitialConditions(testM, testN, BottomIntPts, U)
 
 gpuTime = runGPUsimulation(testM, testN, U, Coordinates, BottomIntPts, 0, [False], 100, 0)
+print gpuTime
