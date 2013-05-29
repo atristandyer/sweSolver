@@ -7,13 +7,17 @@ Created on May 21, 2013
 import os
 import numpy as np
 from pycuda.compiler import SourceModule
+from gpu.gpuSimulation import useCachedKernels
 
 fluxCode = open(os.path.join(os.path.dirname(__file__), './fluxCalculations.cu'), 'r')
 
 try:
 
     # Put the kernel code into a SourceModule
-    fluxModule = SourceModule(fluxCode.read())
+    if useCachedKernels:
+        fluxModule = SourceModule(fluxCode.read())
+    else:
+        fluxModule = SourceModule(fluxCode.read(), cache_dir=False)
     fluxCode.close()
 
     # Create reference to the specific functions in the SourceModule

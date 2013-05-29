@@ -9,13 +9,17 @@ import numpy as np
 from pycuda.compiler import SourceModule
 import pycuda.gpuarray as gpuarray
 import pycuda.cumath as cumath
+from gpu.gpuSimulation import useCachedKernels
 
 timeCode = open(os.path.join(os.path.dirname(__file__), './timeCalculations.cu'), 'r')
 
 try:
 
     # Put the kernel code into a SourceModule
-    timeModule = SourceModule(timeCode.read())
+    if useCachedKernels:
+        timeModule = SourceModule(timeCode.read())
+    else:
+        timeModule = SourceModule(timeCode.read(), cache_dir=False)
     timeCode.close()
 
     # Create reference to the specific functions in the SourceModule

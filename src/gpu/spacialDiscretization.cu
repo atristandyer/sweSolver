@@ -48,10 +48,8 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 	if (col > 0 && row > 0 && col < n-1 && row < m-1)
 	{
 	
-		// Calculate the index of the [w, hu, hv] values in the U vector
+		// Calculate the index of the cell in the U vector
 		int wIndex = row*n*3 + col*3 + 0;
-		int huIndex = row*n*3 + col*3 + 1;
-		int hvIndex = row*n*3 + col*3 + 2;
 	
 		// Now check if the cell has water (evaluates to true if it does)
 		// TODO: It may be necessary to have an else statement as well. If a cell goes
@@ -66,7 +64,6 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 			float forward, central, backward, slope;
 			float Kappa = 0.01f * fmaxf(1.0f, fminf(dx, dy));
 			float sqrt2 = sqrtf(2.0f);
-			float g = 9.81f;
 			
 			// Calculate indices of cells surrounding the current cell in the U vector
 			int upIndex = (row+1)*n*3 + col*3;

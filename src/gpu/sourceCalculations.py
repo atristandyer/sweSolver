@@ -7,13 +7,17 @@ Created on May 22, 2013
 import os
 import numpy as np
 from pycuda.compiler import SourceModule
+from gpu.gpuSimulation import useCachedKernels
 
 sourceCode = open(os.path.join(os.path.dirname(__file__), './sourceCalculations.cu'), 'r')
 
 try:
 
     # Put the kernel code into a SourceModule
-    sourceModule = SourceModule(sourceCode.read())
+    if useCachedKernels:
+        sourceModule = SourceModule(sourceCode.read())
+    else:
+        sourceModule = SourceModule(sourceCode.read(), cache_dir=False)
     sourceCode.close()
 
     # Create reference to the specific functions in the SourceModule

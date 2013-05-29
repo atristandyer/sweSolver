@@ -22,6 +22,7 @@ except ImportError:
 
 try:
     from mesh.meshBuilder import buildSlopingDomain
+    from mesh.initialConditionsBuilder import buildPyramidWaterSurface, validateInitialConditions
     from gpu.gpuSimulation import runGPUsimulation
 except ImportError:
     print "Error loading sweSolver libraries, please reinstall"
@@ -32,6 +33,11 @@ except ImportError:
 ######################################################
 ##### Testing
 ######################################################
-Coordinates, BottomIntPts = buildSlopingDomain(1.0, 128, 128, 0.0, 0.0, 1.0, 0)
-print Coordinates.shape
-print BottomIntPts.shape
+testM = 16
+testN = 16
+testCellSize = 1.0
+Coordinates, BottomIntPts = buildSlopingDomain(testCellSize, testM, testN, 0.0, 0.0, 1.0, 0)
+U = buildPyramidWaterSurface(testM, testN, 3.0, 8, 8, 3.3, 0.1)
+U = validateInitialConditions(testM, testN, BottomIntPts, U)
+
+gpuTime = runGPUsimulation(testM, testN, U, Coordinates, BottomIntPts, 0, [False], 100, 0)

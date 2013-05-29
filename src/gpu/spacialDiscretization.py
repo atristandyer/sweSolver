@@ -7,13 +7,17 @@ Created on May 20, 2013
 import os
 import numpy as np
 from pycuda.compiler import SourceModule
+from gpu.gpuSimulation import useCachedKernels
 
 spacialCode = open(os.path.join(os.path.dirname(__file__), 'spacialDiscretization.cu'), 'r')
 
 try:
 
     # Put the kernel code into a SourceModule
-    spacialModule = SourceModule(spacialCode.read())
+    if useCachedKernels:
+        spacialModule = SourceModule(spacialCode.read())
+    else:
+        spacialModule = SourceModule(spacialCode.read(), cache_dir=False)
     spacialCode.close()
 
     # Create reference to the specific functions in the SourceModule

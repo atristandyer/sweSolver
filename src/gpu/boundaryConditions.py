@@ -7,13 +7,17 @@ Created on May 28, 2013
 import os
 import numpy as np
 from pycuda.compiler import SourceModule
+from gpu.gpuSimulation import useCachedKernels
 
 boundaryCode = open(os.path.join(os.path.dirname(__file__), './boundaryConditions.cu'), 'r')
 
 try:
 
     # Put the kernel code into a SourceModule
-    boundaryModule = SourceModule(boundaryCode.read())
+    if useCachedKernels:
+        boundaryModule = SourceModule(boundaryCode.read())
+    else:
+        boundaryModule = SourceModule(boundaryCode.read(), cache_dir=False)
     boundaryCode.close()
 
     # Create reference to the specific functions in the SourceModule
