@@ -29,25 +29,25 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 	//	UIntPts: set w = ground elevation, u = v = 0
 	int cellIntPtIndex = row*n*4*3 + col*4*3;
 	
-//	if (row > 0 && col > 0 && row < m && col < n)
-//	{
-//		for (int i=0; i<4; i++)
-//		{
-//			for (int j=0; i<3; j++)
-//			{
-//				huvIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
-//				if (j > 0)
-//				{
-//					UIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
-//				}
-//			}
-//		}
-//	
-//		UIntPts[cellIntPtIndex + 0*2] = BottomIntPts[upTerrainIndex];
-//		UIntPts[cellIntPtIndex + 1*2] = BottomIntPts[downTerrainIndex];
-//		UIntPts[cellIntPtIndex + 2*2] = BottomIntPts[rightTerrainIndex];
-//		UIntPts[cellIntPtIndex + 3*2] = BottomIntPts[leftTerrainIndex];
-//	}
+	if (row < m && col < n)
+	{
+		for (int i=0; i<4; i++)
+		{
+			for (int j=0; j<3; j++)
+			{
+				huvIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
+				if (j > 0)
+				{
+					UIntPts[cellIntPtIndex + i*3 + j] = 0.0f;
+				}
+			}
+		}
+	
+		UIntPts[cellIntPtIndex + 0*3] = BottomIntPts[upTerrainIndex];
+		UIntPts[cellIntPtIndex + 1*3] = BottomIntPts[downTerrainIndex];
+		UIntPts[cellIntPtIndex + 2*3] = BottomIntPts[rightTerrainIndex];
+		UIntPts[cellIntPtIndex + 3*3] = BottomIntPts[leftTerrainIndex];
+	}
 
 	// First check if the thread is operating on a cell inside of the block's one cell deep ghost cells
 	if (col > 0 && row > 0 && col < n-1 && row < m-1)
