@@ -1,7 +1,7 @@
 __device__ float minmod(float a, float b, float c)
 {
 	float ab = fminf(fabsf(a), fabs(b)) * (copysignf(1.0f, a) + copysignf(1.0f, b)) * 0.5f;
-	return fminf(fabsf(ab, fabsf(c)) * (copysignf(1.0f, ab) + copysignf(1.0f, c)) * 0.5f;
+	return fminf(fabsf(ab), fabsf(c)) * (copysignf(1.0f, ab) + copysignf(1.0f, c)) * 0.5f;
 }
     
     
@@ -88,7 +88,7 @@ __global__ void ReconstructFreeSurface(float *U, float *BottomIntPts, float *UIn
 				
 				// East and West
 				forward = (U[rightIndex+i] - U[wIndex+i])/dx;
-				central = (U[rightIndex+i] - U[leftIndex+i)/(2.0f*dx);
+				central = (U[rightIndex+i] - U[leftIndex+i])/(2.0f*dx);
 				backward = (U[wIndex+i] - U[leftIndex+i])/dx;
 				slope = minmod(1.3f*forward, central, 1.3f*backward);
 				

@@ -4,10 +4,11 @@ Created on May 28, 2013
 @author: tristan
 '''
 
+import os
 import numpy as np
 from pycuda.compiler import SourceModule
 
-boundaryCode = open('boundaryConditions.cu', 'r')
+boundaryCode = open(os.path.join(os.path.dirname(__file__), './boundaryConditions.cu'), 'r')
 
 try:
 

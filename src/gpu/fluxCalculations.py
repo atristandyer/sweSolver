@@ -4,10 +4,11 @@ Created on May 21, 2013
 @author: tristan
 '''
 
+import os
 import numpy as np
 from pycuda.compiler import SourceModule
 
-fluxCode = open('fluxCalculations.cu', 'r')
+fluxCode = open(os.path.join(os.path.dirname(__file__), './fluxCalculations.cu'), 'r')
 
 try:
 

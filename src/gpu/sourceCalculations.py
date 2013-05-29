@@ -4,10 +4,11 @@ Created on May 22, 2013
 @author: tristan
 '''
 
+import os
 import numpy as np
 from pycuda.compiler import SourceModule
 
-sourceCode = open('sourceCalculations.cu', 'r')
+sourceCode = open(os.path.join(os.path.dirname(__file__), './sourceCalculations.cu'), 'r')
 
 try:
 

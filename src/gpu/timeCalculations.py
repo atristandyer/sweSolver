@@ -4,12 +4,13 @@ Created on May 28, 2013
 @author: tristan
 '''
 
+import os
 import numpy as np
 from pycuda.compiler import SourceModule
 import pycuda.gpuarray as gpuarray
 import pycuda.cumath as cumath
 
-timeCode = open('timeCalculations.cu', 'r')
+timeCode = open(os.path.join(os.path.dirname(__file__), './timeCalculations.cu'), 'r')
 
 try:
 

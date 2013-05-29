@@ -4,10 +4,11 @@ Created on May 20, 2013
 @author: tristan
 '''
 
+import os
 import numpy as np
 from pycuda.compiler import SourceModule
 
-spacialCode = open('spacialDiscretization.cu', 'r')
+spacialCode = open(os.path.join(os.path.dirname(__file__), 'spacialDiscretization.cu'), 'r')
 
 try:
 

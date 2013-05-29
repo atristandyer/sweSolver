@@ -32,4 +32,6 @@ except ImportError:
 ######################################################
 ##### Testing
 ######################################################
-Coordinate, BottomIntPts = buildSlopingDomain(1.0, 128, 128, 0.0, 0.0, 1.0, 0)
+Coordinates, BottomIntPts = buildSlopingDomain(1.0, 128, 128, 0.0, 0.0, 1.0, 0)
+print Coordinates.shape
+print BottomIntPts.shape
