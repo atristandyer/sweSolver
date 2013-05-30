@@ -112,7 +112,7 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
         ReconstructFreeSurface(UGPU, BottomIntPtsGPU, UIntPtsGPU, HUVIntPtsGPU, m, n, dx, dy, blockDims, gridDims)
 
         if debugMode:
-            printMatrix(BottomIntPtsGPU.get())
+            printMatrix(UIntPtsGPU.get())
             break
 
         # Calculate propagation speeds

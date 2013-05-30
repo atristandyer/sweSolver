@@ -5,6 +5,7 @@ Created on May 30, 2013
 '''
 
 outlines = False
+dirValues = {'N': 0, 'S': 1, 'E': 2, 'W': 3}
 
 def printMatrix(matrix, direction='N'):
 
@@ -80,6 +81,141 @@ def printMatrix(matrix, direction='N'):
                 line += ('|' if outlines else ' ')
                 print line
             print horizontalFill
+
+        # Three dim array stored in each cell
+        if matrixShape[2] == 3:
+            horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 19, 2)
+
+            for i in range(numTopValues):
+                print horizontalFill
+                line = ''
+                for j in range(numLeftValues):
+                    line += ('|' if outlines else ' ')
+                    line += "[%04.1f, %04.1f, %04.1f]" % (matrix[m - i - 1][j][0], matrix[m - i - 1][j][1], matrix[m - i - 1][j][2])
+                line += middleFill
+                for j in reversed(range(numRightValues)):
+                    line += ('|' if outlines else ' ')
+                    line += "[%04.1f, %04.1f, %04.1f]" % (matrix[m - i - 1][n - j - 1][0], matrix[m - i - 1][n - j - 1][1], matrix[m - i - 1][n - j - 1][2])
+                line += ('|' if outlines else ' ')
+                print line
+            print horizontalFill
+            print verticalFill
+            for i in reversed(range(numBottomValues)):
+                print horizontalFill
+                line = ''
+                for j in range(numLeftValues):
+                    line += ('|' if outlines else ' ')
+                    line += "[%04.1f, %04.1f, %04.1f]" % (matrix[i][j][0], matrix[i][j][1], matrix[i][j][2])
+                line += middleFill
+                for j in reversed(range(numRightValues)):
+                    line += ('|' if outlines else ' ')
+                    line += "[%04.1f, %04.1f, %04.1f]" % (matrix[i][n - j - 1][0], matrix[i][n - j - 1][1], matrix[i][n - j - 1][2])
+                line += ('|' if outlines else ' ')
+                print line
+            print horizontalFill
+
+        # N, S, E, W with a single value stored at each interface
+        if matrixShape[2] == 4:
+            dirIndex = dirValues.get(direction)
+            printNSEWdirection(m, n, matrix, dirIndex, 1)
+
+    if nDim == 2:
+
+        # N, S, E, W matrix
+        if matrixShape[2] == 4:
+
+            dirIndex = dirValues.get(direction)
+            printNSEWdirection(m, n, matrix, dirIndex, matrixShape[3])
+
+def printNSEWdirection(m, n, matrix, dirIndex, numValuesPerDir):
+
+    if numValuesPerDir == 1:
+        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 7, 2)
+        for i in range(numTopValues):
+            print horizontalFill
+            line = ''
+            for j in range(numLeftValues):
+                line += ('|' if outlines else ' ')
+                line += "%06.2f" % matrix[m - i - 1][j][dirIndex]
+            line += middleFill
+            for j in reversed(range(numRightValues)):
+                line += ('|' if outlines else ' ')
+                line += "%06.2f" % matrix[m - i - 1][n - j - 1][dirIndex]
+            line += ('|' if outlines else ' ')
+            print line
+        print horizontalFill
+        print verticalFill
+        for i in reversed(range(numBottomValues)):
+            print horizontalFill
+            line = ''
+            for j in range(numLeftValues):
+                line += ('|' if outlines else ' ')
+                line += "%06.2f" % matrix[i][j][dirIndex]
+            line += middleFill
+            for j in reversed(range(numRightValues)):
+                line += ('|' if outlines else ' ')
+                line += "%06.2f" % matrix[i][n - j - 1][dirIndex]
+            line += ('|' if outlines else ' ')
+            print line
+        print horizontalFill
+    elif numValuesPerDir == 2:
+        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 13, 2)
+        for i in range(numTopValues):
+            print horizontalFill
+            line = ''
+            for j in range(numLeftValues):
+                line += ('|' if outlines else ' ')
+                line += "[%04.1f, %04.1f]" % (matrix[m - i - 1][j][dirIndex][0], matrix[m - i - 1][j][dirIndex][1])
+            line += middleFill
+            for j in reversed(range(numRightValues)):
+                line += ('|' if outlines else ' ')
+                line += "[%04.1f, %04.1f]" % (matrix[m - i - 1][n - j - 1][dirIndex][0], matrix[m - i - 1][n - j - 1][dirIndex][1])
+            line += ('|' if outlines else ' ')
+            print line
+        print horizontalFill
+        print verticalFill
+        for i in reversed(range(numBottomValues)):
+            print horizontalFill
+            line = ''
+            for j in range(numLeftValues):
+                line += ('|' if outlines else ' ')
+                line += "[%04.1f, %04.1f]" % (matrix[i][j][dirIndex][0], matrix[i][j][dirIndex][1])
+            line += middleFill
+            for j in reversed(range(numRightValues)):
+                line += ('|' if outlines else ' ')
+                line += "[%04.1f, %04.1f]" % (matrix[i][n - j - 1][dirIndex][0], matrix[i][n - j - 1][dirIndex][1])
+            line += ('|' if outlines else ' ')
+            print line
+        print horizontalFill
+    elif numValuesPerDir == 3:
+        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 19, 2)
+        for i in range(numTopValues):
+            print horizontalFill
+            line = ''
+            for j in range(numLeftValues):
+                line += ('|' if outlines else ' ')
+                line += "[%04.1f, %04.1f, %04.1f]" % (matrix[m - i - 1][j][dirIndex][0], matrix[m - i - 1][j][dirIndex][1], matrix[m - i - 1][j][dirIndex][2])
+            line += middleFill
+            for j in reversed(range(numRightValues)):
+                line += ('|' if outlines else ' ')
+                line += "[%04.1f, %04.1f, %04.1f]" % (matrix[m - i - 1][n - j - 1][dirIndex][0], matrix[m - i - 1][n - j - 1][dirIndex][1], matrix[m - i - 1][n - j - 1][dirIndex][2])
+            line += ('|' if outlines else ' ')
+            print line
+        print horizontalFill
+        print verticalFill
+        for i in reversed(range(numBottomValues)):
+            print horizontalFill
+            line = ''
+            for j in range(numLeftValues):
+                line += ('|' if outlines else ' ')
+                line += "[%04.1f, %04.1f, %04.1f]" % (matrix[i][j][dirIndex][0], matrix[i][j][dirIndex][1], matrix[i][j][dirIndex][2])
+            line += middleFill
+            for j in reversed(range(numRightValues)):
+                line += ('|' if outlines else ' ')
+                line += "[%04.1f, %04.1f, %04.1f]" % (matrix[i][n - j - 1][dirIndex][0], matrix[i][n - j - 1][dirIndex][1], matrix[i][n - j - 1][dirIndex][2])
+            line += ('|' if outlines else ' ')
+            print line
+        print horizontalFill
 
 
 def getTerminalSize():

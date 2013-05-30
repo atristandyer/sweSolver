@@ -40,12 +40,14 @@ def buildSlopingDomain(cellSize, m, n, bL, tL, tR, boundaryType):
     # Change boundary elevations
     adjustBoundaries(m, n, meshCoordinates, boundaryType)
 
-    for i in range(m):
-        for j in range(n):
-            # Bottom integration point elevation
-            meshBottomIntPts[i][j][0] = (meshCoordinates[i][j + 1][2] + meshCoordinates[i][j][2]) / 2.0
-            # Left integration point elevation
-            meshBottomIntPts[i][j][1] = (meshCoordinates[i + 1][j][2] + meshCoordinates[i][j][2]) / 2.0
+    for i in range(m + 1):
+        for j in range(n + 1):
+            if j < n:
+                # Bottom integration point elevation
+                meshBottomIntPts[i][j][0] = (meshCoordinates[i][j + 1][2] + meshCoordinates[i][j][2]) / 2.0
+            if i < m:
+                # Left integration point elevation
+                meshBottomIntPts[i][j][1] = (meshCoordinates[i + 1][j][2] + meshCoordinates[i][j][2]) / 2.0
 
     return meshCoordinates, meshBottomIntPts
 
