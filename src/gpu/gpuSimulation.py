@@ -5,6 +5,10 @@ Created on May 28, 2013
 '''
 
 useCachedKernels = True
+debugMode = True
+
+if debugMode:
+    from io.debugScripts import printMatrix
 
 from sys import stdout
 import numpy as np
@@ -107,6 +111,10 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
         # Reconstruct the free surface
         ReconstructFreeSurface(UGPU, BottomIntPtsGPU, UIntPtsGPU, HUVIntPtsGPU, m, n, dx, dy, blockDims, gridDims)
 
+        if debugMode:
+
+            break
+
         # Calculate propagation speeds
         CalculatePropSpeeds(UIntPtsGPU, HUVIntPtsGPU, PropSpeedsGPU, m, n, blockDims, gridDims)
 
@@ -165,6 +173,10 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
 
         time += dt
         iterations += 1
+
+        if dt < 0.0001:
+            print "Error: Extremely small timestep: " + str(dt)
+            break
 
         # Print some output to the user every 100 iterations
         if (iterations % 100 == 0):
