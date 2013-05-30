@@ -111,12 +111,12 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
         # Reconstruct the free surface
         ReconstructFreeSurface(UGPU, BottomIntPtsGPU, UIntPtsGPU, HUVIntPtsGPU, m, n, dx, dy, blockDims, gridDims)
 
-        if debugMode:
-            printMatrix(UIntPtsGPU.get())
-            break
-
         # Calculate propagation speeds
         CalculatePropSpeeds(UIntPtsGPU, HUVIntPtsGPU, PropSpeedsGPU, m, n, blockDims, gridDims)
+
+        if debugMode:
+            printMatrix(PropSpeedsGPU.get(), 'N')
+            break
 
         # Calculate fluxes
         FluxSolver(FluxesGPU, UIntPtsGPU, BottomIntPtsGPU, PropSpeedsGPU, m, n, blockDims, gridDims)

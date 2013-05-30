@@ -6,6 +6,7 @@ Created on May 30, 2013
 
 outlines = False
 dirValues = {'N': 0, 'S': 1, 'E': 2, 'W': 3}
+minDots = 1
 
 def printMatrix(matrix, direction='N'):
 
@@ -18,7 +19,7 @@ def printMatrix(matrix, direction='N'):
     if nDim == 0:
 
         # Calculate the number of values to print per row
-        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 7, 2)
+        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 7, minDots)
 
         for i in range(numTopValues):
             print horizontalFill
@@ -52,7 +53,7 @@ def printMatrix(matrix, direction='N'):
 
         # Two dim array stored in each cell
         if matrixShape[2] == 2:
-            horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 13, 2)
+            horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 13, minDots)
 
             for i in range(numTopValues):
                 print horizontalFill
@@ -84,7 +85,7 @@ def printMatrix(matrix, direction='N'):
 
         # Three dim array stored in each cell
         if matrixShape[2] == 3:
-            horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 19, 2)
+            horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 19, minDots)
 
             for i in range(numTopValues):
                 print horizontalFill
@@ -130,7 +131,7 @@ def printMatrix(matrix, direction='N'):
 def printNSEWdirection(m, n, matrix, dirIndex, numValuesPerDir):
 
     if numValuesPerDir == 1:
-        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 7, 2)
+        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 7, minDots)
         for i in range(numTopValues):
             print horizontalFill
             line = ''
@@ -159,7 +160,7 @@ def printNSEWdirection(m, n, matrix, dirIndex, numValuesPerDir):
             print line
         print horizontalFill
     elif numValuesPerDir == 2:
-        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 13, 2)
+        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 13, minDots)
         for i in range(numTopValues):
             print horizontalFill
             line = ''
@@ -188,7 +189,7 @@ def printNSEWdirection(m, n, matrix, dirIndex, numValuesPerDir):
             print line
         print horizontalFill
     elif numValuesPerDir == 3:
-        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 19, 2)
+        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 19, minDots)
         for i in range(numTopValues):
             print horizontalFill
             line = ''

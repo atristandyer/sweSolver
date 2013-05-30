@@ -185,17 +185,17 @@ __global__ void CalculatePropSpeeds(float *UIntPts, float *huvIntPts, float *pro
 	{
 		
 		// Make sure cell is wet by making sure at least one value of h is greater than 0
-		float hNorth = huvIntPts[row*n*4*2 + col*4*2 + 0*2];		// value of h at the north interface of the current cell
-		float hSouth = huvIntPts[(row+1)*n*4*2 + col*4*2 + 1*2];	// value of h at the south interface of the cell above
-		float hEast = huvIntPts[row*n*4*2 + col*4*2 + 2*2];		// value of h at the east interface of the current cell
-		float hWest = huvIntPts[row*n*4*2 + (col+1)*4*2 + 3*2];		// value of h at the west interface of the cell to the right
+		float hNorth = huvIntPts[row*n*4*3 + col*4*3 + 0*3];		// value of h at the north interface of the current cell
+		float hSouth = huvIntPts[(row+1)*n*4*3 + col*4*3 + 1*3];	// value of h at the south interface of the cell above
+		float hEast = huvIntPts[row*n*4*3 + col*4*3 + 2*3];		// value of h at the east interface of the current cell
+		float hWest = huvIntPts[row*n*4*3 + (col+1)*4*3 + 3*3];		// value of h at the west interface of the cell to the right
 		if (hNorth > 0.0f || hSouth > 0.0f || hEast > 0.0f || hWest > 0.0f)
 		{
 			// Get the rest of the values needed from huvIntPts
-			float vNorth = huvIntPts[row*n*4*2 + col*4*2 + 0*2 + 1];	// value of v at the north interface of the current cell
-			float vSouth = huvIntPts[(row+1)*n*4*2 + col*4*2 + 1*2 + 1];	// value of v at the south interface of the cell above
-			float uEast = huvIntPts[row*n*4*2 + col*4*2 + 2*2 + 1];		// value of u at the east interface of the current cell
-			float uWest = huvIntPts[row*n*4*2 + (col+1)*4*2 + 3*2 + 1];	// value of u at the west interface of the cell to the right
+			float vNorth = huvIntPts[row*n*4*3 + col*4*3 + 0*3 + 1];	// value of v at the north interface of the current cell
+			float vSouth = huvIntPts[(row+1)*n*4*3 + col*4*3 + 1*3 + 1];	// value of v at the south interface of the cell above
+			float uEast = huvIntPts[row*n*4*3 + col*4*3 + 2*3 + 1];		// value of u at the east interface of the current cell
+			float uWest = huvIntPts[row*n*4*3 + (col+1)*4*3 + 3*3 + 1];	// value of u at the west interface of the cell to the right
 		
 			// Each cell in propSpeeds contains four values [N, S, E, W]
 			// Each thread will calculate the N, E values of it's own cell, the S of the cell above, and the W of
