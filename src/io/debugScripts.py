@@ -6,7 +6,7 @@ Created on May 30, 2013
 
 outlines = False
 dirValues = {'N': 0, 'S': 1, 'E': 2, 'W': 3}
-minDots = 1
+minDots = 2
 
 def printMatrix(matrix, direction='N'):
 
@@ -122,10 +122,16 @@ def printMatrix(matrix, direction='N'):
 
     if nDim == 2:
 
+        dirIndex = dirValues.get(direction)
+
+        # N, E matrix
+        if matrixShape[2] == 2 and (dirIndex == 0 or dirIndex == 2):
+            if dirIndex == 2:
+                dirIndex = 1
+            printNSEWdirection(m, n, matrix, dirIndex, matrixShape[3])
+
         # N, S, E, W matrix
         if matrixShape[2] == 4:
-
-            dirIndex = dirValues.get(direction)
             printNSEWdirection(m, n, matrix, dirIndex, matrixShape[3])
 
 def printNSEWdirection(m, n, matrix, dirIndex, numValuesPerDir):

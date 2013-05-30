@@ -36,8 +36,8 @@ except ImportError:
 testM = 64
 testN = 64
 testCellSize = 1.0
-Coordinates, BottomIntPts = buildSlopingDomain(testCellSize, testM, testN, 0.0, 0.0, 1.0, 0)
-U = buildPyramidWaterSurface(testM, testN, 3.0, 20, 20, 4.0, 0.1)
+Coordinates, BottomIntPts = buildSlopingDomain(testCellSize, testM, testN, 0.0, 0.0, 0.0, 0)
+U = buildPyramidWaterSurface(testM, testN, 10.0, 32, 32, 13.0, 0.1)
 U = validateInitialConditions(testM, testN, BottomIntPts, U)
 
 gpuTime = runGPUsimulation(testM, testN, U, Coordinates, BottomIntPts, 0, [False], 100, 0)

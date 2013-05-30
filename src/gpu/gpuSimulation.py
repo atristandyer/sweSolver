@@ -114,12 +114,12 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
         # Calculate propagation speeds
         CalculatePropSpeeds(UIntPtsGPU, HUVIntPtsGPU, PropSpeedsGPU, m, n, blockDims, gridDims)
 
-        if debugMode:
-            printMatrix(PropSpeedsGPU.get(), 'N')
-            break
-
         # Calculate fluxes
         FluxSolver(FluxesGPU, UIntPtsGPU, BottomIntPtsGPU, PropSpeedsGPU, m, n, blockDims, gridDims)
+
+        if debugMode:
+            printMatrix(FluxesGPU.get(), 'N')
+            break
 
         # Calculate source terms
         BedSlopeSourceSolver(SlopeSourceGPU, UGPU, BottomIntPtsGPU, m, n, dx, dy, blockDims, gridDims)
@@ -129,7 +129,7 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
         BuildRValues(RGPU, FluxesGPU, SlopeSourceGPU, WindSourceGPU, m, n, blockDims, gridDims)
 
         # Calculate timestep
-        dt = calculateTimestep(PropSpeedsGPU, dx)
+        dt, maxSpeed = calculateTimestep(PropSpeedsGPU, dx)
         if saveOutput and time + dt > nextSave:
             dt = nextSave - time
 
@@ -174,12 +174,15 @@ def runGPUsimulation(m, n, U, Coordinates, BottomIntPts, Wind, saveInfo, runTime
         time += dt
         iterations += 1
 
-        if dt < 0.0001:
-            print "Error: Extremely small timestep: " + str(dt)
+        if dt < 0.000001:
+            if debugMode:
+                print "Error: Extremely small timestep: " + str(dt)
+                printMatrix(UGPU.get(), 'N')
+                print "Max propagation speed: " + str(maxSpeed)
             break
 
         # Print some output to the user every 100 iterations
-        if (iterations % 100 == 0):
+        if (iterations % 1 == 0):
             stdout.write("\rIteration: %i\tTotal time simulated: %.4f seconds\tTimestep: %.4f" % (iterations, time, dt))
             stdout.flush()
 

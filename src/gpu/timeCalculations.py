@@ -48,4 +48,4 @@ except IOError:
 def calculateTimestep(PropSpeedsGPU, cellDim):
 
     maxPropSpeed = gpuarray.max(cumath.fabs(PropSpeedsGPU)).get()
-    return cellDim / (4.0 * maxPropSpeed)
+    return cellDim / (4.0 * maxPropSpeed), maxPropSpeed
