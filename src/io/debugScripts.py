@@ -47,44 +47,39 @@ def printMatrix(matrix, direction='N'):
             print line
         print horizontalFill
 
-    # Data stored in each cell is an array
-    if 0 == 1:
+    if nDim == 1:
 
-        # Calculate the number of values to print per row
-        horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 7, 2)
+        # Two dim array stored in each cell
+        if matrixShape[2] == 2:
+            horizontalFill, verticalFill, middleFill, numLeftValues, numRightValues, numTopValues, numBottomValues = createFillLines(m, n, 13, 2)
 
-        for i in range(numTopValues):
-            print horizontalFill
-            line = ''
-            for j in range(numLeftValues):
-                line += '|      '
-            line += middleFill
-            for j in range(numRightValues):
-                line += '|      '
-            line += '|'
-            print line
-        print horizontalFill
-        print verticalFill
-        for i in range(numBottomValues):
-            print horizontalFill
-            line = ''
-            for j in range(numLeftValues):
-                line += '|      '
-            line += middleFill
-            for j in range(numRightValues):
-                line += '|      '
-            line += '|'
-            print line
-        print horizontalFill
-
-
-        # Single value stored in each cell
-        if matrixShape[2] == 1:
-            for i in reversed(range(n - numTopValues, n)):
-                line = '|'
-                for j in range(0, numLeftValues):
-                    line += "%05.2f" % matrix[i][j] + ' | '
+            for i in range(numTopValues):
+                print horizontalFill
+                line = ''
+                for j in range(numLeftValues):
+                    line += ('|' if outlines else ' ')
+                    line += "[%04.1f, %04.1f]" % (matrix[m - i - 1][j][0], matrix[m - i - 1][j][1])
+                line += middleFill
+                for j in reversed(range(numRightValues)):
+                    line += ('|' if outlines else ' ')
+                    line += "[%04.1f, %04.1f]" % (matrix[m - i - 1][n - j - 1][0], matrix[m - i - 1][n - j - 1][1])
+                line += ('|' if outlines else ' ')
                 print line
+            print horizontalFill
+            print verticalFill
+            for i in reversed(range(numBottomValues)):
+                print horizontalFill
+                line = ''
+                for j in range(numLeftValues):
+                    line += ('|' if outlines else ' ')
+                    line += "[%04.1f, %04.1f]" % (matrix[i][j][0], matrix[i][j][1])
+                line += middleFill
+                for j in reversed(range(numRightValues)):
+                    line += ('|' if outlines else ' ')
+                    line += "[%04.1f, %04.1f]" % (matrix[i][n - j - 1][0], matrix[i][n - j - 1][1])
+                line += ('|' if outlines else ' ')
+                print line
+            print horizontalFill
 
 
 def getTerminalSize():
